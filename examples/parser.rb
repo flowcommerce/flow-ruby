@@ -18,7 +18,7 @@ class Parser
   def initialize(text)
     @metadata = {}
 
-    tmp = " " + strip_html(text).downcase + " "
+    tmp = " " + Parser.strip_html(text).downcase + " "
     keywords = KEYWORDS.select { |k| tmp.include?(" #{k }") }
     if !keywords.empty?
       @metadata[:keywords] = keywords
@@ -26,12 +26,12 @@ class Parser
     
     text.split("\n").map(&:strip).each do |l|
       if md = l.match(/Made in:(.+)/i)
-        value = strip_html(md[1])
+        value = Parser.strip_html(md[1])
         @metadata[:made_in] = value
         @metadata[:origin] = fetch_country_of_origin(value)
 
       elsif md = l.match(/Made of:(.+)/i)
-        value = strip_html(md[1])
+        value = Parser.strip_html(md[1])
         @metadata[:made_of] = value
         words = split(value)
 
@@ -42,7 +42,7 @@ class Parser
         end
 
       elsif md = l.match(/size:(.+)/i)
-        @metadata[:size] = strip_html(md[1])
+        @metadata[:size] = Parser.strip_html(md[1])
       end
 
     end
@@ -66,7 +66,7 @@ class Parser
     }
   end
 
-  def strip_html(text)
+  def Parser.strip_html(text)
     text.gsub(/<\/?[^>]*>/, "").strip
   end
 
