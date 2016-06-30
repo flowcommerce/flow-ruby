@@ -36,6 +36,8 @@ module FlowCommerce
       FlowCommerce.catalog_client(token, opts = {})
     when "experience"
       FlowCommerce.experience_client(token, opts = {})
+    when "harmonization"
+      FlowCommerce.harmonization_client(token, opts = {})
     else
       raise "Invalid module name[%s]" % app
     end
@@ -68,6 +70,21 @@ module FlowCommerce
       Io::Flow::Experience::V0::Client.at_base_url(:authorization => auth)
     else
       Io::Flow::Experience::V0::Client.new(base_url, :authorization => auth)
+    end
+  end
+
+  def FlowCommerce.harmonization_client(token, opts = {})
+    if token.empty?
+      raise "ERROR: Token is required"
+    end
+
+    base_url = opts[:base_url].to_s.strip
+    auth = Io::Flow::Harmonization::V0::HttpClient::Authorization.basic(token)
+
+    if base_url.empty?
+      Io::Flow::Harmonization::V0::Client.at_base_url(:authorization => auth)
+    else
+      Io::Flow::Harmonization::V0::Client.new(base_url, :authorization => auth)
     end
   end
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'flowcommerce'
+#require 'flowcommerce'
 
 # Enable for local testing
-# load 'lib/flowcommerce.rb'
+load 'lib/flowcommerce.rb'
 
 load 'examples/util.rb'
 
@@ -21,7 +21,8 @@ puts ""
 clients = begin
             {
               :catalog => FlowCommerce.instance("catalog"),
-              :experience => FlowCommerce.instance("experience")
+              :experience => FlowCommerce.instance("experience"),
+              :harmonization => FlowCommerce.instance("harmonization")
             }
          rescue Exception => e
            puts ""

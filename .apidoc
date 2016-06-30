@@ -12,3 +12,7 @@ code:
       version: latest
       generators:
         ruby_client: lib/clients
+    harmonization:
+      version: latest
+      generators:
+        ruby_client: lib/clients
