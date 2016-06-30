@@ -6,6 +6,7 @@
 load 'lib/flowcommerce.rb'
 
 load 'examples/util.rb'
+load 'examples/parser.rb'
 
 puts ""
 puts "Welcome to Flow Commerce"
@@ -43,7 +44,14 @@ if org == ""
 end
 
 Util.display_menu
-selection = nil
+
+num = ARGV.shift.to_i-1
+if num > 0
+  selection = Util::MENU[num]
+else
+  selection = nil
+end
+
 while selection.nil?
   value = Util::Ask.for_positive_integer("Select example to run:")
   selection = Util::MENU[value - 1]

@@ -33,11 +33,11 @@ module FlowCommerce
 
     case app
     when "catalog"
-      FlowCommerce.catalog_client(token, opts = {})
+      FlowCommerce.catalog_client(token)
     when "experience"
-      FlowCommerce.experience_client(token, opts = {})
+      FlowCommerce.experience_client(token)
     when "harmonization"
-      FlowCommerce.harmonization_client(token, opts = {})
+      FlowCommerce.harmonization_client(token, :base_url => "http://localhost:6161")
     else
       raise "Invalid module name[%s]" % app
     end

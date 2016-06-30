@@ -644,15 +644,17 @@ module Io
           # assigned, codes will be available via the hs6 and hs10 resources
           class HarmonizedItem
 
-            attr_reader :id, :number, :description, :categories
+            attr_reader :id, :number, :name, :description, :categories, :metadata
 
             def initialize(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
-              HttpClient::Preconditions.require_keys(opts, [:id, :number], 'HarmonizedItem')
+              HttpClient::Preconditions.require_keys(opts, [:id, :number, :name], 'HarmonizedItem')
               @id = HttpClient::Preconditions.assert_class('id', opts.delete(:id), String)
               @number = HttpClient::Preconditions.assert_class('number', opts.delete(:number), String)
+              @name = HttpClient::Preconditions.assert_class('name', opts.delete(:name), String)
               @description = (x = opts.delete(:description); x.nil? ? nil : HttpClient::Preconditions.assert_class('description', x, String))
               @categories = HttpClient::Preconditions.assert_class('categories', (x = opts.delete(:categories); x.nil? ? [] : x), Array).map { |v| HttpClient::Preconditions.assert_class('categories', v, String) }
+              @metadata = HttpClient::Preconditions.assert_class('metadata', (x = opts.delete(:metadata); x.nil? ? {} : x), Hash).inject({}) { |h, d| h[d[0]] = HttpClient::Preconditions.assert_class('metadata', d[1], String); h }
             end
 
             def to_json
@@ -667,8 +669,10 @@ module Io
               {
                 :id => id,
                 :number => number,
+                :name => name,
                 :description => description,
-                :categories => categories
+                :categories => categories,
+                :metadata => metadata
               }
             end
 
@@ -775,14 +779,16 @@ module Io
 
           class HarmonizedItemForm
 
-            attr_reader :number, :categories, :description
+            attr_reader :name, :number, :categories, :description, :metadata
 
             def initialize(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
-              HttpClient::Preconditions.require_keys(opts, [:number], 'HarmonizedItemForm')
+              HttpClient::Preconditions.require_keys(opts, [:name, :number], 'HarmonizedItemForm')
+              @name = HttpClient::Preconditions.assert_class('name', opts.delete(:name), String)
               @number = HttpClient::Preconditions.assert_class('number', opts.delete(:number), String)
               @categories = (x = opts.delete(:categories); x.nil? ? nil : HttpClient::Preconditions.assert_class('categories', x, Array).map { |v| HttpClient::Preconditions.assert_class('categories', v, String) })
               @description = (x = opts.delete(:description); x.nil? ? nil : HttpClient::Preconditions.assert_class('description', x, String))
+              @metadata = (x = opts.delete(:metadata); x.nil? ? nil : HttpClient::Preconditions.assert_class('metadata', x, Hash).inject({}) { |h, d| h[d[0]] = HttpClient::Preconditions.assert_class('metadata', d[1], String); h })
             end
 
             def to_json
@@ -795,9 +801,11 @@ module Io
 
             def to_hash
               {
+                :name => name,
                 :number => number,
                 :categories => categories.nil? ? nil : categories,
-                :description => description
+                :description => description,
+                :metadata => metadata.nil? ? nil : metadata
               }
             end
 
@@ -805,12 +813,15 @@ module Io
 
           class HarmonizedItemPutForm
 
-            attr_reader :categories, :description
+            attr_reader :name, :categories, :description, :metadata
 
             def initialize(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
+              HttpClient::Preconditions.require_keys(opts, [:name], 'HarmonizedItemPutForm')
+              @name = HttpClient::Preconditions.assert_class('name', opts.delete(:name), String)
               @categories = (x = opts.delete(:categories); x.nil? ? nil : HttpClient::Preconditions.assert_class('categories', x, Array).map { |v| HttpClient::Preconditions.assert_class('categories', v, String) })
               @description = (x = opts.delete(:description); x.nil? ? nil : HttpClient::Preconditions.assert_class('description', x, String))
+              @metadata = (x = opts.delete(:metadata); x.nil? ? nil : HttpClient::Preconditions.assert_class('metadata', x, Hash).inject({}) { |h, d| h[d[0]] = HttpClient::Preconditions.assert_class('metadata', d[1], String); h })
             end
 
             def to_json
@@ -823,8 +834,10 @@ module Io
 
             def to_hash
               {
+                :name => name,
                 :categories => categories.nil? ? nil : categories,
-                :description => description
+                :description => description,
+                :metadata => metadata.nil? ? nil : metadata
               }
             end
 
