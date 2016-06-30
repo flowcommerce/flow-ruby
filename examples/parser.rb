@@ -3,6 +3,8 @@ require 'json'
 
 class Parser
 
+  KEYWORDS = ["Basket", "Metal Rack", "Cutlery Knives", "Basket", "Bags", "speakers", "Lamps", "Sauce", "Fish", "Fruit", "Nut", "Honey", "Lotion", "Basket", "Wood Broom", "Tools", "Soap", "Towel", "Scissors", "Jewelry", "Bags, Tote", "Women, Shirt", "T-Shirt", "Handkerchiefs", "Filter", "Basket", "Book", "Ginger", "saffron", "turmeric", "thyme", "bay leaves", "curry", "Basket", "Pasta", "Bags", "Towel", "Linen", "Apron", "Bag", "Mitts", "Bag", "Metal Rack", "Basket", "Bag", "Lamps", "Bulbs", "Candles", "Syrup", "Maple Syrup", "Linen", "Napkin", "Pepper", "Vanilla", "Cinnamon", "Cloves", "Nutmeg", "mace", "cardamom", "Anise", "Badian", "Fennel", "Coriander", "cumin", "caraway", "Towel", "Linen", "Apron", "Towel", "Basket"].map(&:downcase).uniq
+
   WEIGHT = %w(pound pounds ounce ounces gram grams kilogram kilograms).map(&:downcase).uniq
   
   WOOD = %w(pine).map(&:downcase).uniq
@@ -16,13 +18,22 @@ class Parser
   def initialize(text)
     @metadata = {}
 
+    tmp = " " + strip_html(text).downcase + " "
+    keywords = KEYWORDS.select { |k| tmp.include?(" #{k }") }
+    if !keywords.empty?
+      @metadata[:keywords] = keywords
+    end
+    
     text.split("\n").map(&:strip).each do |l|
       if md = l.match(/Made in:(.+)/i)
-        @metadata[:origin] = fetch_country_of_origin(strip_html(md[1]))
+        value = strip_html(md[1])
+        @metadata[:made_in] = value
+        @metadata[:origin] = fetch_country_of_origin(value)
 
       elsif md = l.match(/Made of:(.+)/i)
-        text = strip_html(md[1])
-        words = split(text)
+        value = strip_html(md[1])
+        @metadata[:made_of] = value
+        words = split(value)
 
         if matches?(words, WOOD)
           @metadata[:materials] = ["wood"]

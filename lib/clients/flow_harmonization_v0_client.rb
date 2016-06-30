@@ -151,7 +151,7 @@ module Io
                 :number => (x = opts.delete(:number); x.nil? ? nil : HttpClient::Preconditions.assert_class('number', x, Array).map { |v| HttpClient::Preconditions.assert_class('number', v, String) }),
                 :limit => HttpClient::Preconditions.assert_class('limit', (x = opts.delete(:limit); x.nil? ? 25 : x), Integer),
                 :offset => HttpClient::Preconditions.assert_class('offset', (x = opts.delete(:offset); x.nil? ? 0 : x), Integer),
-                :sort => HttpClient::Preconditions.assert_class('sort', (x = opts.delete(:sort); x.nil? ? "-created_at" : x), String)
+                :sort => HttpClient::Preconditions.assert_class('sort', (x = opts.delete(:sort); x.nil? ? "name" : x), String)
               }.delete_if { |k, v| v.nil? }
               r = @client.request("/#{CGI.escape(organization)}/harmonization/items").with_query(query).get
               r.map { |x| ::Io::Flow::Harmonization::V0::Models::HarmonizedItem.new(x) }
