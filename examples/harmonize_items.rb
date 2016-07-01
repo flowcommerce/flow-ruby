@@ -21,15 +21,18 @@ module HarmonizeItems
   end
 
   def HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, limit, offset)  
+    items = nil
+
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['480-Syrupandcream'])
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['502-cherry'])
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['117-default_sku'])
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['523-4_piece'])
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['667-default_sku'])
-    items = nil
+    items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['307-default_sku'])
+
     while items.nil?
       begin
-        items = catalog_client.items.get(org, :limit => limit, :offset => offset)
+        items = catalog_client.items.get(org, :limit => limit, :offset => offset, :sort => "-name")
       rescue Exception => e
         puts "** WARNING: Unable to fetch catalog items: #{e}. Trying again in 1 second"
         sleep(1)

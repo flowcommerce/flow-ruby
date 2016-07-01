@@ -77,18 +77,22 @@ class Parser
 
   private
   def fetch_country_of_origin(text)
-    url = URI('https://location.api.flow.io/locations?address=%s' % CGI.escape(text))
-    result = Net::HTTP.get(url)
-    if all = JSON.parse(result)
-      if all.first
-        if country = all.first['country']
-          return country
+    url = 'https://location.api.flow.io/locations?address=%s' % CGI.escape(text)
+
+    uri = URI(url)
+    begin
+      result = Net::HTTP.get(uri)
+      if all = JSON.parse(result)
+        if all.first
+          if country = all.first['country']
+            return country
+          end
         end
       end
+      nil
+    rescue Exception => e
+      puts "** Warning: Error parsing country of origin for[%s](%s): %s" % [text, url, e.to_s]
     end
-    nil
-  rescue Exception => e
-    puts "** Warning: Error fetting country of origin for[%s]: %s" % [text, e.to_s]
   end
 
   def matches?(values, words)

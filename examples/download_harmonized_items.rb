@@ -7,6 +7,8 @@ module DownloadHarmonizedItems
     def initialize
       @items = 0
       @hs6 = 0
+      @origin = 0
+      @hs6_and_origin = 0
     end
 
     def incr_item
@@ -17,10 +19,24 @@ module DownloadHarmonizedItems
       @hs6 += 1
     end
 
+    def incr_origin
+      @origin += 1
+    end
+
+    def incr_hs6_and_origin
+      @hs6_and_origin += 1
+    end
+
     def label
-      puts "  Number items: %s" % @items
-      puts " With hs6 code: %s" % @hs6
-      puts "    Percentage: %s%" % ((100.0 * @hs6) / @items).to_i
+      puts "     Number items: %s" % @items
+      puts "    With hs6 code: %s %s" % [@hs6, pct(@hs6, @items)]
+      puts "      With origin: %s %s" % [@origin, pct(@origin, @items)]
+      puts "With hs6 & origin: %s %s" % [@hs6_and_origin, pct(@hs6_and_origin, @items)]
+    end
+
+    private
+    def pct(num, den)
+      ((100.0 * num) / den).to_i.to_s + "%"
     end
   end
 
@@ -28,10 +44,10 @@ module DownloadHarmonizedItems
     stats = Stats.new
     path = "/tmp/food52-harmonization.csv"
     CSV.open(path, "wb") do |csv|
-      csv << ["number", "hs6", "country_of_origin", "materials", "keywords", "name", "made_in", "made_of", "size", "description"]
-      
-      DownloadHarmonizedItems.run_internal(csv, stats, harmonization_client, org, :limit => 100, :offset => 0, :number => ['2319-bowl_with_wood_wax'], :sort => 'number')
-      #DownloadHarmonizedItems.run_internal(csv, stats, harmonization_client, org, :limit => 100, :offset => 0, :sort => 'number')
+      csv << ["number", "hs6", "country_of_origin", "category", "materials", "keywords", "name", "made_in", "made_of", "size", "description"]
+
+      #DownloadHarmonizedItems.run_internal(csv, stats, harmonization_client, org, :limit => 100, :offset => 0, :number => ['2319-bowl_with_wood_wax'], :sort => 'number')
+      DownloadHarmonizedItems.run_internal(csv, stats, harmonization_client, org, :limit => 100, :offset => 0, :sort => 'number')
     end
 
     puts ""
@@ -68,13 +84,24 @@ module DownloadHarmonizedItems
     
     items.each do |item|
       stats.incr_item
+
       if hs6[item.number]
         stats.incr_hs6
       end
 
+      origin = DownloadHarmonizedItems.extract(item.metadata, "origin")
+      if origin
+        stats.incr_origin
+      end
+
+      if hs6[item.number] && origin
+        stats.incr_hs6_and_origin
+      end
+
       csv << [item.number,
               hs6[item.number],
-              DownloadHarmonizedItems.extract(item.metadata, "origin"),
+              origin,
+              item.categories.first,
               DownloadHarmonizedItems.extract(item.metadata, "materials"),
               DownloadHarmonizedItems.extract(item.metadata, "keywords"),
               item.name,
