@@ -2,20 +2,46 @@ require 'csv'
 require 'json'
 
 module DownloadHarmonizedItems
-  
+
+  class Stats
+    def initialize
+      @items = 0
+      @hs6 = 0
+    end
+
+    def incr_item
+      @items += 1
+    end
+
+    def incr_hs6
+      @hs6 += 1
+    end
+
+    def label
+      puts "  Number items: %s" % @items
+      puts " With hs6 code: %s" % @hs6
+      puts "    Percentage: %s%" % ((100.0 * @hs6) / @items).to_i
+    end
+  end
+
   def DownloadHarmonizedItems.run(harmonization_client, org)
+    stats = Stats.new
     path = "/tmp/food52-harmonization.csv"
     CSV.open(path, "wb") do |csv|
       csv << ["number", "hs6", "country_of_origin", "materials", "keywords", "name", "made_in", "made_of", "size", "description"]
       
-      #DownloadHarmonizedItems.run_internal(csv, harmonization_client, org, :limit => 100, :offset => 0, :number => ['2319-bowl_with_wood_wax'], :sort => 'number')
-      DownloadHarmonizedItems.run_internal(csv, harmonization_client, org, :limit => 100, :offset => 0, :sort => 'number')
+      DownloadHarmonizedItems.run_internal(csv, stats, harmonization_client, org, :limit => 100, :offset => 0, :number => ['2319-bowl_with_wood_wax'], :sort => 'number')
+      #DownloadHarmonizedItems.run_internal(csv, stats, harmonization_client, org, :limit => 100, :offset => 0, :sort => 'number')
     end
 
+    puts ""
+    puts stats.label
+    puts ""
     puts "Data downloaded to: %s" % path
+    puts ""
   end
 
-  def DownloadHarmonizedItems.run_internal(csv, harmonization_client, org, params)
+  def DownloadHarmonizedItems.run_internal(csv, stats, harmonization_client, org, params)
     params[:limit] ||= 100
     params[:offset] ||= 0
 
@@ -29,8 +55,23 @@ module DownloadHarmonizedItems
     harmonization_client.hs6.get(org, :item_number => itemsNumbers).each do |rec|
       hs6[rec.item.number] = rec.code
     end
+
+    FlowCommerce.instance("harmonization_production").hs6.get(org, :item_number => itemsNumbers).each do |rec|
+      if hs6[rec.item.number]
+        if hs6[rec.item.number] != rec.code
+          puts " * WARNING %s is hs6[%] in dev, but hs6[%s] in prod" % [rec.item.number, hs6[rec.item.number], rec.code]
+        end
+      else
+        hs6[rec.item.number] = rec.code
+      end
+    end
     
     items.each do |item|
+      stats.incr_item
+      if hs6[item.number]
+        stats.incr_hs6
+      end
+
       csv << [item.number,
               hs6[item.number],
               DownloadHarmonizedItems.extract(item.metadata, "origin"),
@@ -46,7 +87,7 @@ module DownloadHarmonizedItems
     
     if items.size >= params[:limit]
       params[:offset] += params[:limit]
-      DownloadHarmonizedItems.run_internal(csv, harmonization_client, org, params)
+      DownloadHarmonizedItems.run_internal(csv, stats, harmonization_client, org, params)
     end
   end
 

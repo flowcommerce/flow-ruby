@@ -38,6 +38,8 @@ module FlowCommerce
       FlowCommerce.experience_client(token)
     when "harmonization"
       FlowCommerce.harmonization_client(token, :base_url => "http://localhost:6161")
+    when "harmonization_production"
+      FlowCommerce.harmonization_client(token)
     else
       raise "Invalid module name[%s]" % app
     end
