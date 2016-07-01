@@ -17,14 +17,16 @@ module HarmonizeItems
 
   def HarmonizeItems.run(catalog_client, harmonization_client, org)
     explicit = HarmonizeItems.load_explicit
-    HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, 10, 0)
+    HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, 100, 833)
   end
 
   def HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, limit, offset)  
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['480-Syrupandcream'])
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['502-cherry'])
-    items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['117-default_sku'])
-    #items = catalog_client.items.get(org, :limit => limit, :offset => offset)
+    #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['117-default_sku'])
+    #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['523-4_piece'])
+    #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['667-default_sku'])
+    items = catalog_client.items.get(org, :limit => limit, :offset => offset)
     
     items.each_with_index do |item, i|
       puts "%s. %s %s ..." % [offset+i+1, item.number, item.price.label]
@@ -57,7 +59,7 @@ module HarmonizeItems
     end
 
     if items.size >= limit
-      #HarmonizeItems.run_internal(catalog_client, harmonization_client, org, limit, offset + limit)
+      HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, limit, offset + limit)
     end
   end
 

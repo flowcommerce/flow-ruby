@@ -67,7 +67,8 @@ class Parser
   end
 
   def Parser.strip_html(text)
-    text.gsub(/<\/?[^>]*>/, "").strip
+    # Strip html, and remove '/' which some partners don't like
+    text.gsub(/<\/?[^>]*>/, "").gsub(/\//, '-').gsub(/\\/, '-').strip
   end
 
   def Parser.parse(text)
