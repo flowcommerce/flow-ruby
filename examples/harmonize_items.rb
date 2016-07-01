@@ -17,7 +17,7 @@ module HarmonizeItems
 
   def HarmonizeItems.run(catalog_client, harmonization_client, org)
     explicit = HarmonizeItems.load_explicit
-    HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, 100, 833)
+    HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, 100, 0)
   end
 
   def HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, limit, offset)  
@@ -26,7 +26,15 @@ module HarmonizeItems
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['117-default_sku'])
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['523-4_piece'])
     #items = catalog_client.items.get(org, :limit => limit, :offset => offset, :number => ['667-default_sku'])
-    items = catalog_client.items.get(org, :limit => limit, :offset => offset)
+    items = nil
+    while items.nil?
+      begin
+        items = catalog_client.items.get(org, :limit => limit, :offset => offset)
+      rescue Exception => e
+        puts "** WARNING: Unable to fetch catalog items: #{e}. Trying again in 1 second"
+        sleep(1)
+      end
+    end
     
     items.each_with_index do |item, i|
       puts "%s. %s %s ..." % [offset+i+1, item.number, item.price.label]
@@ -54,12 +62,25 @@ module HarmonizeItems
         :metadata => Hash[metadata.map { |k, v| [k, v.to_json.to_s] }]
       )
 
-      harmonization_client.harmonized_items.put_by_number(org, item.number, form)
+      count = 0
+      while true
+        begin
+          harmonization_client.harmonized_items.put_by_number(org, item.number, form)
+          break
+        rescue Exception => e
+          if count > 5
+            raise "Unable to create harmonized item: #{e}"
+          end
+          count += 1
+          puts "** WARNING: Unable to create harmonized item: #{e}. Trying again in 1 second"
+          sleep(1)
+        end
+      end
       puts ""
     end
 
     if items.size >= limit
-      HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, limit, offset + limit)
+      #HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, limit, offset + limit)
     end
   end
 
