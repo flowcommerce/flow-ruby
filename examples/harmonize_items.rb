@@ -62,25 +62,27 @@ module HarmonizeItems
         :metadata => Hash[metadata.map { |k, v| [k, v.to_json.to_s] }]
       )
 
+      ## Exponential backoff w/ retry
       count = 0
       while true
         begin
           harmonization_client.harmonized_items.put_by_number(org, item.number, form)
           break
         rescue Exception => e
-          if count > 5
+          if count > 10
             raise "Unable to create harmonized item: #{e}"
           end
           count += 1
-          puts "** WARNING: Unable to create harmonized item: #{e}. Trying again in 1 second"
-          sleep(1)
+          sleep_time = count*count
+          puts "** WARNING: Unable to create harmonized item: #{e}. Trying again in #{sleep_time} seconds"
+          sleep(sleep_time)
         end
       end
       puts ""
     end
 
     if items.size >= limit
-      #HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, limit, offset + limit)
+      HarmonizeItems.run_internal(catalog_client, harmonization_client, explicit, org, limit, offset + limit)
     end
   end
 
