@@ -12,6 +12,18 @@ module FlowCommerce
   # @param base_url Alternate URL for the API
   def FlowCommerce.instance(opts={})
     base_url = opts[:base_url].to_s.strip
+    token = FlowCommerce.token(:token => opts[:token].to_s.strip) 
+
+    auth = Io::Flow::V0::HttpClient::Authorization.basic(token)
+
+    if base_url.empty?
+      Io::Flow::V0::Client.at_base_url(:authorization => auth)
+    else
+      Io::Flow::V0::Client.new(base_url, :authorization => auth)
+    end
+  end
+
+  def FlowCommerce.token(opts={})
     token = opts[:token].to_s.strip
 
     if token.empty?
@@ -34,14 +46,7 @@ module FlowCommerce
         end
       end
     end
-
-    auth = Io::Flow::V0::HttpClient::Authorization.basic(token)
-
-    if base_url.empty?
-      Io::Flow::V0::Client.at_base_url(:authorization => auth)
-    else
-      Io::Flow::V0::Client.new(base_url, :authorization => auth)
-    end
+    token
   end
 
 end
