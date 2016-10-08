@@ -61,7 +61,8 @@ end
 
 name = File.basename(path)
 api_key = FlowCommerce.token
-cmd = "curl --silent -u #{api_key}: -d @#{path} 'https://api.flow.io/#{org}/uploads/#{name}'"
+cmd = "curl --silent --data-binary @#{path} -H 'Content-type: text/plain' -u #{api_key}: 'https://api.flow.io/#{org}/uploads/#{name}'"
+puts cmd
 upload = JSON.parse(`#{cmd}`.strip)
 puts "Uploaded file to %s" % upload['url']
 
