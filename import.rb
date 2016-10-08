@@ -75,6 +75,3 @@ imp = client.imports.post(org,
                          )
 
 puts "Created import: #{imp.id}"
-
-
-
