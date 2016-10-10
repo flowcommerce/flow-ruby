@@ -59,6 +59,13 @@ while path.nil?
   end
 end
 
+email = `git config user.email`.strip.to_s
+if email.empty?
+  puts "Missing user.email. Set git property user.email by running:"
+  puts "git config --global user.email your-email@flow.io"
+  exit(1)
+end
+
 name = File.basename(path)
 api_key = FlowCommerce.token
 cmd = "curl --silent --data-binary @#{path} -H 'Content-type: text/plain' -u #{api_key}: 'https://api.flow.io/#{org}/uploads/#{name}'"
@@ -70,8 +77,9 @@ imp = client.imports.post(org,
                           ::Io::Flow::V0::Models::ImportForm.new(
                             :type => ::Io::Flow::V0::Models::ImportType.harmonization_codes,
                             :source_url => upload['url'],
-                            :emails => ['mike@flow.io']
+                            :emails => [email]
                           )
                          )
-
+puts ""
 puts "Created import: #{imp.id}"
+puts "You will be notified at #{email} once processed"
