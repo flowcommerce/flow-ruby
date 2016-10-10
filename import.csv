@@ -1,2 +1,2 @@
-Record ID,number,HS Code,Destination,Origin,Tariff Code
-57acc82ae4b0fb688eb85656,sku-1,060390,AT,US,0603900000
+Number,Sample ID,Goods Description,HS Code,Destination,Origin,Tariff Code,Tariff Treatment(s),Duty Rate,Tax Name,Tax Rate,OGA Flag,
+F001:2294,F001,perfume Eau de Parfum,330300,AU,US,3303000030,"Rate #, US","5%, Free",VAT,10%,true,Restricted by DHL
