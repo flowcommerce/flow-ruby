@@ -14,7 +14,7 @@ module Hack
   def Hack.run(client, org)
     all = all_numbers(client, org)
     all.each_with_index do |n, i|
-      if i % 100 == 0
+      if i % 50 == 0
         puts "Starting record %s/%s" % [i, all.size]
       end
       if n.match(/\:/)
