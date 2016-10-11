@@ -32,7 +32,8 @@ module Util
     Util::MenuItem.new("Landed Cost", "examples/landed_cost.rb", Proc.new { |client, org| LandedCost.run(client, org) }),
 
     Util::MenuItem.new("Payment: Create card", "examples/create_card.rb", Proc.new { |client, org| CreateCard.run(client, org) }),
-    Util::MenuItem.new("Payment: Create authorization", "examples/create_authorization.rb", Proc.new { |client, org| CreateAuthorization.run(client, org) })
+    Util::MenuItem.new("Payment: Create authorization", "examples/create_authorization.rb", Proc.new { |client, org| CreateAuthorization.run(client, org) }),
+    Util::MenuItem.new("Hack", "examples/hack.rb", Proc.new { |client, org| Hack.run(client, org) })
   ]
 
   def Util.display_menu
