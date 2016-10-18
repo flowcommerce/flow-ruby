@@ -30,6 +30,8 @@ module Util
     Util::MenuItem.new("Experience: Copy to another org", "examples/copy_experiences.rb", Proc.new { |client, org| CopyExperiences.run(client, org) }),
     Util::MenuItem.new("Experience Items: Show", "examples/show_experience_items.rb", Proc.new { |client, org| ShowExperienceItems.run(client, org) }),
 
+    Util::MenuItem.new("Order: Create", "examples/example_order.rb", Proc.new { |client, org| ExampleOrder.run(client, org) }),
+
     Util::MenuItem.new("Landed Cost", "examples/landed_cost.rb", Proc.new { |client, org| LandedCost.run(client, org) }),
 
     Util::MenuItem.new("Payment: Create card", "examples/create_card.rb", Proc.new { |client, org| CreateCard.run(client, org) }),
