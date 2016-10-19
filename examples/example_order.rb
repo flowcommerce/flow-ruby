@@ -66,6 +66,8 @@ module ExampleOrder
       card_token = "F96l6mkBn8UTiBYAbbYfqE1jU63ABSIpLV3wQW51qN6vppMJ5M3cDqgi5vev26UM"
     end
 
+    exit(1)
+    
     if do_order
       order = ExampleOrder.create_order(client, org)
       puts "Created order %s for total of %s" % [order.number, order.total.label]
