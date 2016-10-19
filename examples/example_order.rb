@@ -53,9 +53,9 @@ module ExampleOrder
   end
   
   def ExampleOrder.run(client, org)
-    do_card = false
-    do_order = false
-    do_auth = false
+    do_card = true
+    do_order = true
+    do_auth = true
     do_capture = true
 
     if do_card
