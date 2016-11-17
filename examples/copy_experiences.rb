@@ -8,6 +8,9 @@ module CopyExperiences
       raise "Base organization[#{org}] and target organization[#{target_org}] cannot be the same"
     end
 
+    target_token = Util::Ask.for_string("Please paste token for #{target_org}: ", :echo => false)
+    target_client = FlowCommerce.instance(:token => target_token)
+
     # get all experiences from base org
     experiences = client.experiences.get(org, :limit => 100, :order => "position")
     max = experiences.size
@@ -16,15 +19,15 @@ module CopyExperiences
     experiences.each_with_index do |exp, i|
       puts "[#{i+1}/#{max}] Experience key[#{exp.key}] from base org[#{org}] to target org[#{target_org}]"
 
-      CopyExperiences.copy_experience(client, org, target_org, exp)
-      CopyExperiences.copy_pricing(client, org, target_org, exp)
-      CopyExperiences.copy_tiers(client, org, target_org, exp)
+      CopyExperiences.copy_experience(client, org, target_client, target_org, exp)
+      CopyExperiences.copy_pricing(client, org, target_client, target_org, exp)
+      CopyExperiences.copy_tiers(client, org, target_client, target_org, exp)
 
       puts ""
     end
   end
 
-  def CopyExperiences.copy_experience(client, org, target_org, exp)
+  def CopyExperiences.copy_experience(client, org, target_client, target_org, exp)
     puts "    - id: #{exp.id}"
     puts "    - key: #{exp.key}"
     puts "    - name: #{exp.name}"
@@ -40,13 +43,13 @@ module CopyExperiences
     # Or else we get generic error with message "subcatalog Id is required when updating an experience"
     # GET /:organization/experiences/:key
     begin
-      subcatalog_id = client.experiences.get_by_key(target_org, exp.key).subcatalog.id
+      subcatalog_id = target_client.experiences.get_by_key(target_org, exp.key).subcatalog.id
     rescue Exception => e
       subcatalog_id = nil
     end
 
     # PUT /:organization/experiences/:key
-    new_experience = client.experiences.put_by_key(
+    new_experience = target_client.experiences.put_by_key(
       target_org,
       exp.key,
       ::Io::Flow::V0::Models::ExperienceForm.new(
@@ -65,7 +68,7 @@ module CopyExperiences
     puts "    - UPSERTED EXPERIENCE: ID: #{new_experience.id}, KEY: #{new_experience.key}, NAME: #{new_experience.name}"
   end
 
-  def CopyExperiences.copy_pricing(client, org, target_org, exp)
+  def CopyExperiences.copy_pricing(client, org, target_client, target_org, exp)
     pricing = client.experiences.get_pricing_by_key(org, exp.key)
     puts "    - vat: #{pricing.vat.value}"
     puts "    - duty: #{pricing.duty.value}"
@@ -80,7 +83,7 @@ module CopyExperiences
     end
 
     # PUT /:organization/experiences/:key/pricing
-    new_pricing = client.experiences.put_pricing_by_key(
+    new_pricing = target_client.experiences.put_pricing_by_key(
       target_org,
       exp.key,
       ::Io::Flow::V0::Models::Pricing.new(
@@ -92,7 +95,7 @@ module CopyExperiences
     puts "       - UPSERTED PRICING: VAT: #{new_pricing.vat.value}, DUTY: #{new_pricing.duty.value}, ROUNDING: #{new_pricing.rounding.to_json}"
   end
 
-  def CopyExperiences.copy_tiers(client, org, target_org, exp)
+  def CopyExperiences.copy_tiers(client, org, target_client, target_org, exp)
     tiers = client.tiers.get(org, :experience => exp.key)
     max = tiers.size
     puts "    - tiers:"
@@ -117,7 +120,7 @@ module CopyExperiences
       end
 
       # POST /:organization/tiers
-      new_tier = client.tiers.post(
+      new_tier = target_client.tiers.post(
         target_org,
         ::Io::Flow::V0::Models::TierForm.new(
           :name => tier.name,

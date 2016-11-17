@@ -6,7 +6,8 @@ module CreateAuthorization
                                :number => "4012888888881881",
                                :name => "Joe Smith",
                                :expiration_month => 1,
-                               :expiration_year => Time.now.year + 1
+                               :expiration_year => Time.now.year + 1,
+                               :cvv => "737"
                              )
                             )
     puts card.inspect

@@ -14,7 +14,7 @@ dir = File.dirname(__FILE__)
 def extract_version(path)
   IO.readlines(path).each do |l|
     #if md = l.strip.match(/VERSION\s*=\s*[\'\"]?([^\'\"]+)/i)
-    if md = l.strip.match(/apidoc.+http\:\/\/www.apidoc.me\/flow\/api\/([\d\.]+)/i)
+    if md = l.strip.match(/apidoc.+http\:\/\/.+\/flow\/api\/([\d\.]+)/i)
       return md[1]
     end
   end
