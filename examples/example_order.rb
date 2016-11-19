@@ -26,61 +26,63 @@ module ExampleOrder
   end
 
   def ExampleOrder.create_order(client, org)
-    item_number = org == "demo" ? "sku-2" : "sku-201610-9679"
-    discount = org == "demo" ? 20 : 12
-    number = SecureRandom.uuid.to_s.gsub(/\-/, '')
+    item_number = org == "demo" ? "sku-2" : "M500098-HMJ-CHR-4"
+    discount = org == "demo" ? 20 : 10
+    number = "test-" + SecureRandom.uuid.to_s.gsub(/\-/, '')
 
     form = ::Io::Flow::V0::Models::OrderPutForm.new(
       :items => [
-        { :number => item_number, :quantity => 1, :center => "flow", :price => { :amount => 1.5, :currency => "CAD" } },
+        { :number => item_number, :quantity => 1, :price => { :amount => 1.5, :currency => "GBP" } },
       ],
       :customer => {
-        :name => { :first => "Michael", :last => "Bryzek" },
-        :phone => "+1-646-813-9414",
-        :email => "somebody@test.flow.io"
+        :name => { :first => "Al", :last => "Keve" },
+        :email => "mike@flow.io"
       },
       :destination => {
-        :streets => [ "512 Danforth Ave" ],
-        :city => "Toronto",
-        :province => "Ontario",
-        :postal => "M4K 1P6",
-        :country => "CAN"
+        :streets => [ "16, Chetwynd Road" ],
+        :city => "London",
+        :postal => "NW5 1BY",
+        :country => "GBR"
       },
-      :discount => { :amount => discount, :currency => "CAD" }      
+      :discount => { :amount => discount, :currency => "GBP" }      
     )
 
-    client.orders.put_by_number(org, number, form, :country => "CAN")
+    client.orders.put_by_number(org, number, form, :country => "GBR")
   end
   
   def ExampleOrder.run(client, org)
-    do_card = true
-    do_order = true
+    do_card = false
+    do_order = false
     do_auth = true
-    do_capture = true
+    do_capture = false
 
     if do_card
       card = ExampleOrder.create_card(client, org)
       puts "Created card %s ending in %s" % [card.id, card.last4]
       card_token = card.token
     else
-      card_token = "F96l6mkBn8UTiBYAbbYfqE1jU63ABSIpLV3wQW51qN6vppMJ5M3cDqgi5vev26UM"
+      card_id = "crd-2275c77d986f4e55b8b0290e14437909"
+      card = client.cards.get(org, :id => [card_id]).first
+      if card.nil?
+        raise "No card"
+      end
+      puts "Found card %s ending in %s" % [card.id, card.last4]
+      card_token = card.token
     end
 
-    exit(1)
-    
     if do_order
       order = ExampleOrder.create_order(client, org)
       puts "Created order %s for total of %s" % [order.number, order.total.label]
       order_number = order.number
     else
-      order_number = "3543ed706ad14c1cb032742413d98d3c"
+      order_number = "test-1a311979805c4a8daa1ead778e4b530b"
     end
 
     if do_auth
       auth = client.authorizations.post(org,
                                         ::Io::Flow::V0::Models::MerchantOfRecordAuthorizationForm.new(
                                          :token => card_token,
-                                         :order_number => order.number
+                                         :order_number => order_number
                                         )
                                        )
       auth_key = auth.key
@@ -91,7 +93,7 @@ module ExampleOrder
     else
       auth_key = "aut-035920fa0e8f44c2abc2ea71ba58ae82"
       auth_amount = 3.11
-      auth_currency = "CAD"
+      auth_currency = "GBP"
       auth_status = "authorized"
     end
 
