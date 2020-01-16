@@ -55,28 +55,85 @@ each_experience(client, org) do |exp|
 
   each_local_item(client, org, exp.key) do |local_item|
     x = [org, exp.id, local_item.item.number].join(":")
-    id = `scala Foo '#{x}'`
-    puts id # erm_item.local_items.id
     hash = JSON.parse(local_item.to_json)
-    pricing_attributes = hash["pricing"]["attributes"].to_json
-    item_id = local_item.item.id
-    item_number = local_item.item.number
+
+    # ==================================================
+    # ==================================================
+    # ==================================================
+    id = `scala Foo '#{x}'`
+    organization_id = org
+    experience_country = local_item.experience.country
+    experience_currency = local_item.experience.currency
     experience_id = local_item.experience.id
     experience_key = local_item.experience.key
     experience_language = local_item.experience.language
     experience_name = local_item.experience.name
-    experience_country = local_item.experience.country
-    experience_currency = local_item.experience.currency
-
+    item_id = local_item.item.id
+    item_number = local_item.item.number
+    pricing_attributes = hash["pricing"]["attributes"].to_json
     pricing_price_amount = local_item.pricing.price.amount
-    pricing_price_currency = local_item.pricing.price.currency
-    pricing_price_label = local_item.pricing.price.label
-
     pricing_price_base_amount = local_item.pricing.price.base.amount
     pricing_price_base_currency = local_item.pricing.price.base.currency
     pricing_price_base_label = local_item.pricing.price.base.label
+    pricing_price_currency = local_item.pricing.price.currency
+    pricing_price_includes_key = local_item.pricing.price.includes.key
+    pricing_price_includes_label = local_item.pricing.price.includes.label
+    pricing_price_label = local_item.pricing.price.label
+    status = local_item.status.to_s
+    _hash_code = 0
+    _version = 1
+    _updated_at = "now()"
+    # ==================================================
+    # ==================================================
+    # ==================================================
+    sql = <<-"EOF"
+insert into paypal_authentication_data (
+  id,
+  organization,
+  environment,
+  client_id_reference,
+  secret_reference,
+  updated_by_user_id,
+  hash_code,
+  key
+)
+select
+  '#{generate_id("ppc")}',
+  '#{config.organization.id}',
+  '#{credentials.environment}',
+  '#{credentials.client_id_reference}',
+  '#{credentials.secret_reference}',
+  '#{USER_ID}',
+  0,
+  '#{credentials.key}'
+from organization.organizations
+where id = '#{config.organization.id}'
+on conflict (organization, key, environment)
+do update
+   set client_id_reference = '#{credentials.client_id_reference}',
+       secret_reference = '#{credentials.secret_reference}';
+EOF
+    # ==================================================
+    # ==================================================
+    # ==================================================
+    puts "-----------------"
+  end
+  puts "============================================================="
+end
 
-
+=begin
+select * from erm_item.local_items where organization_id ='mzwallace' and item_number='22685' and experience_key='canada';
+    id                                              │ lit-136049c89c9f3a60b58d8d421046c075
+    organization_id                                 │ mzwallace
+    experience_country                              │ CAN
+    experience_currency                             │ CAD
+    experience_id                                   │ exp-35fce9942c884dd1956534c08122d633
+    experience_key                                  │ canada
+    experience_language                             │ en
+    experience_name                                 │ Canada
+    item_id                                         │ cit-e9747bf9e6ad47ea9baba88e5c9ea262
+    item_number                                     │ 22685
+    pricing_attributes                              │ {"usd-msrp":{"amount":595,"currency":"CAD","label":"CA$595.00","base":{"amount":439.44,"currency":"USD","label":"US$439.44"}}}
     pricing_price_amount                            │ 475.0
     pricing_price_base_amount                       │ 345.0
     pricing_price_base_currency                     │ USD
@@ -85,19 +142,11 @@ each_experience(client, org) do |exp|
     pricing_price_includes_key                      │ vat_and_duty
     pricing_price_includes_label                    │ Includes HST and duty
     pricing_price_label                             │ CA$475.00
-
-
-
-
-
-
-
-
-    puts pricing_attributes
-    puts "-----------------"
-  end
-  puts "============================================================="
-end
+    status                                          │ included
+    _hash_code                                      │ -86733699
+    _updated_at                                     │ 2020-01-16 05:39:36.404+00
+    _version                                        │ 1
+=end
 
 =begin
 {
@@ -158,31 +207,4 @@ end
   },
   "status":"included"
 }
-=end
-
-=begin
-select * from erm_item.local_items where organization_id ='mzwallace' and item_number='22685' and experience_key='canada';
-    id                                              │ lit-136049c89c9f3a60b58d8d421046c075
-    organization_id                                 │ mzwallace
-    experience_country                              │ CAN
-    experience_currency                             │ CAD
-    experience_id                                   │ exp-35fce9942c884dd1956534c08122d633
-    experience_key                                  │ canada
-    experience_language                             │ en
-    experience_name                                 │ Canada
-    item_id                                         │ cit-e9747bf9e6ad47ea9baba88e5c9ea262
-    item_number                                     │ 22685
-    pricing_attributes                              │ {"usd-msrp":{"amount":595,"currency":"CAD","label":"CA$595.00","base":{"amount":439.44,"currency":"USD","label":"US$439.44"}}}
-    pricing_price_amount                            │ 475.0
-    pricing_price_base_amount                       │ 345.0
-    pricing_price_base_currency                     │ USD
-    pricing_price_base_label                        │ US$345.00
-    pricing_price_currency                          │ CAD
-    pricing_price_includes_key                      │ vat_and_duty
-    pricing_price_includes_label                    │ Includes HST and duty
-    pricing_price_label                             │ CA$475.00
-    status                                          │ included
-    _hash_code                                      │ -86733699
-    _updated_at                                     │ 2020-01-16 05:39:36.404+00
-    _version                                        │ 1
 =end
