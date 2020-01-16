@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'flowcommerce'
+require 'json'
 
 org = ARGV.shift.to_s.strip
 
@@ -47,22 +48,6 @@ def each_local_item(client, org, key, limit=25, offset=0, &block)
   end
 end
 
-def _guid(ints, reverse=false)
-  hexes = ints.map { |b| b.to_s(16).rjust(2, '0') }
-  return hexes.reverse.join if reverse
-  hexes.join
-end
-
-def guid(ints)
-  '%s-%s-%s-%s-%s' % [
-    _guid(ints[0...4], true),
-    _guid(ints[4...6], true),
-    _guid(ints[6...8], true),
-    _guid(ints[8...10]),
-    _guid(ints[10..-1]),
-  ]
-end
-
 # iterate through all the experiences
 each_experience(client, org) do |exp|
   # val bytes = Seq(Some(org), Some(experienceId), Some(itemNumber), centerKey).flatten.mkString(":").getBytes()
@@ -72,6 +57,43 @@ each_experience(client, org) do |exp|
     x = [org, exp.id, local_item.item.number].join(":")
     id = `scala Foo '#{x}'`
     puts id # erm_item.local_items.id
+    hash = JSON.parse(local_item.to_json)
+    pricing_attributes = hash["pricing"]["attributes"].to_json
+    item_id = local_item.item.id
+    item_number = local_item.item.number
+    experience_id = local_item.experience.id
+    experience_key = local_item.experience.key
+    experience_language = local_item.experience.language
+    experience_name = local_item.experience.name
+    experience_country = local_item.experience.country
+    experience_currency = local_item.experience.currency
+
+    pricing_price_amount = local_item.pricing.price.amount
+    pricing_price_currency = local_item.pricing.price.currency
+    pricing_price_label = local_item.pricing.price.label
+
+    pricing_price_base_amount = local_item.pricing.price.base.amount
+    pricing_price_base_currency = local_item.pricing.price.base.currency
+    pricing_price_base_label = local_item.pricing.price.base.label
+
+
+    pricing_price_amount                            │ 475.0
+    pricing_price_base_amount                       │ 345.0
+    pricing_price_base_currency                     │ USD
+    pricing_price_base_label                        │ US$345.00
+    pricing_price_currency                          │ CAD
+    pricing_price_includes_key                      │ vat_and_duty
+    pricing_price_includes_label                    │ Includes HST and duty
+    pricing_price_label                             │ CA$475.00
+
+
+
+
+
+
+
+
+    puts pricing_attributes
     puts "-----------------"
   end
   puts "============================================================="
